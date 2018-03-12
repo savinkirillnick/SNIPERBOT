@@ -10,14 +10,14 @@
   gtag('config', 'UA-47078483-4');
 </script>
 <title>
-WEX SNIPER-BOT v0.1 u.1
+Bitfinex SNIPER-BOT v0.1 u.1
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="description" content="Bitcoin wex.nz SNIPER-BOT" />
+<meta name="description" content="Bitcoin bitfinex.com SNIPER-BOT" />
 <meta property="keywords" content="" />
-<meta property="og:description" content="Bitcoin wex.nz SNIPER-BOT" />
+<meta property="og:description" content="Bitcoin binfinex.com SNIPER-BOT" />
 <meta property="og:image" content="http://funnymay.com/images/thumb.jpg" />
-<meta property="og:title" content="WEX SNIPER-BOT v0.1" />
+<meta property="og:title" content="Bitfinex SNIPER-BOT v0.1" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="http://funnymay.com/" />
   <style type="text/css">
@@ -177,7 +177,7 @@ function showPop() {
 
 function saveSettings () {
 
-	deleteCookie('wex_set_'+top.document.runBot.botSet.value);
+	deleteCookie('bitfinex_set_'+top.document.runBot.botSet.value);
 
 	var date = new Date;
 	date.setDate( date.getDate() + 365 );
@@ -206,13 +206,13 @@ function saveSettings () {
 	_g["set"]["orderLife"] = parseInt(top.document.runBot.orderLife.value);
 
 	var encryptedString = CryptoJS.AES.encrypt(cookieString, top.document.runBot.password.value);
-	setCookie('wex_set_'+top.document.runBot.botSet.value, encryptedString.toString(), { expires: date.toUTCString() });
+	setCookie('bitfinex_set_'+top.document.runBot.botSet.value, encryptedString.toString(), { expires: date.toUTCString() });
 	log("Settings Set_"+top.document.runBot.botSet.value+" saved.");
 }
 
 function loadSettings () {
 
-	var settingsString = getCookie('wex_set_'+top.document.runBot.botSet.value);
+	var settingsString = getCookie('bitfinex_set_'+top.document.runBot.botSet.value);
 	var decryptedString = CryptoJS.AES.decrypt(settingsString, top.document.runBot.password.value);
 
 	if (decryptedString != ""){
@@ -250,7 +250,7 @@ function loadSettings () {
 
 function getRules() {
 
-var url = ""+_g["host"]+"/api_wex.php?method=getRules";
+var url = ""+_g["host"]+"/api_bitfinex.php?method=getRules";
 
 var req = getXMLHTTP();
     if (!req) {
@@ -304,7 +304,7 @@ var v = pair.split('_');
 var key = _g["set"]["key"];
 var secret = _g["set"]["secret"];
 
-var url = ""+_g["host"]+"/api_wex.php?method=getBalances&key="+key+"&secret="+secret;
+var url = ""+_g["host"]+"/api_bitfinex.php?method=getBalances&key="+key+"&secret="+secret;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -352,7 +352,7 @@ var v = (pair).split('_');
 var aroundPrice = _g["rules"]["pairs"][pair]["aroundPrice"];
 var aroundQty = _g["rules"]["pairs"][pair]["aroundQty"];
 
-var url = ""+_g["host"]+"/api_wex.php?method=getTrades&key="+key+"&secret="+secret+"&pair="+pair+"&since="+since;
+var url = ""+_g["host"]+"/api_bitfinex.php?method=getTrades&key="+key+"&secret="+secret+"&pair="+pair+"&since="+since;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -386,7 +386,7 @@ function getDepth() {
 var pair = _g["pairs"][top.document.runBot.pair.value];
 var depth = _g["set"]["depth"];
 
-var url = ""+_g["host"]+"/api_wex.php?method=getDepth&depth="+depth+"&pair="+pair;
+var url = ""+_g["host"]+"/api_bitfinex.php?method=getDepth&depth="+depth+"&pair="+pair;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -460,7 +460,7 @@ var v = pair.split('_');
 var key = _g["set"]["key"];
 var secret = _g["set"]["secret"];
 
-var url = ""+_g["host"]+"/api_wex.php?method=getOrders&key="+key+"&secret="+secret+"&pair="+pair;
+var url = ""+_g["host"]+"/api_bitfinex.php?method=getOrders&key="+key+"&secret="+secret+"&pair="+pair;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -712,7 +712,7 @@ function cancelOrder(orderId) {
 var key = _g["set"]["key"];
 var secret = _g["set"]["secret"];
 
-var url = ""+_g["host"]+"/api_wex.php?method=cancelOrder&key="+key+"&secret="+secret+"&id="+orderId;
+var url = ""+_g["host"]+"/api_bitfinex.php?method=cancelOrder&key="+key+"&secret="+secret+"&id="+orderId;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -762,14 +762,14 @@ if (type == "BUY") {
   if (stepDistance != 0) {
 	buyPrice = (parseFloat(buyPrice) + parseFloat(stepDistance)).toFixed(aroundPrice);
   }
-	url = ""+_g["host"]+"/api_wex.php?method=sendOrder&key="+key+"&secret="+secret+"&pair="+pair+"&type=buy&qty="+buyQty+"&price="+buyPrice;
+	url = ""+_g["host"]+"/api_bitfinex.php?method=sendOrder&key="+key+"&secret="+secret+"&pair="+pair+"&type=buy&qty="+buyQty+"&price="+buyPrice;
 }
 
 if (type == "SELL") {
   if (stepDistance != 0) {
 	sellPrice = (parseFloat(sellPrice) - parseFloat(stepDistance)).toFixed(aroundPrice);
   }
-	url = ""+_g["host"]+"/api_wex.php?method=sendOrder&key="+key+"&secret="+secret+"&pair="+pair+"&type=sell&qty="+sellQty+"&price="+sellPrice;
+	url = ""+_g["host"]+"/api_bitfinex.php?method=sendOrder&key="+key+"&secret="+secret+"&pair="+pair+"&type=sell&qty="+sellQty+"&price="+sellPrice;
 }
 
 var req = getXMLHTTP();

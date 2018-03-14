@@ -1390,7 +1390,7 @@ if ($method == 'getDepth') {
 
 	$count = count($asks);
 	for ($i=0; $i < $count;$i++) {
-		$depth .= "[".$asks[$i][0].",".$asks[$i][1]."],";
+		$depth .= "[".$asks[($count-$i-1)][0].",".$asks[($count-$i-1)][1]."],";
 	}
 	$depth = substr($depth, 0, -1);
 	$depth .= "],\"bids\":[";

@@ -711,8 +711,9 @@ function cancelOrder(orderId) {
 
 var key = _g["set"]["key"];
 var secret = _g["set"]["secret"];
+var pair = _g["pairs"][top.document.runBot.pair.value];
 
-var url = ""+_g["host"]+"/api_okex.php?method=cancelOrder&key="+key+"&secret="+secret+"&id="+orderId;
+var url = ""+_g["host"]+"/api_okex.php?method=cancelOrder&key="+key+"&secret="+secret+"&id="+orderId+"&pair="+pair;
 
 var req = getXMLHTTP();
     if (!req) {
@@ -974,7 +975,6 @@ function initBot() {
 </td>
 <td width=* height='40'>
 <div id='run'>
-
 <table cellpadding='0' cellspacing='0' border='0' width='100%'>
 <tr>
 <td width='100%'>
@@ -1003,7 +1003,7 @@ function initBot() {
 </td>
 <td width='8%' align='right'>Order Life, min&nbsp;
 </td>
-<td width='8%'><input type='number' step='30' name='orderLife' placeholder='180' value='180' style='width:80px;'>
+<td width='8%'><input type='number' step='1' name='orderLife' placeholder='180' value='180' style='width:80px;'>
 </td>
 </tr><tr>
 <td height='30' align='right'>Max Buy&nbsp;

@@ -1,4 +1,41 @@
-# SNIPERBOT
+# [EN] SNIPERBOT
+#### Automatic trading system for the crypto currency
+
+## Installation:
+
+To run the code, you need a server with a configured php and with extension of **curl_php**
+
+If your server is installed on the local machine and has the address:
+```
+http://127.0.0.1/
+```
+then extract the contents to the root folder:
+```
+products/sniperbot/binance.html
+products/sniperbot/bitfinex.html
+products/sniperbot/huobi.html
+products/sniperbot/index.html
+products/sniperbot/poloniex.html
+js/aex.js 
+js/cookies.html 
+js/xhr.js
+api/binance_api.php
+api/bitfinex_api.php
+api/huobi_api.php
+api/poloniex_api.php
+```
+For launch bot type in adress bar `http://127.0.0.1/products/sniperbot`
+
+The bot trades at the best prices in depth.
+
+The bot sends buy orders at price lower than `maxBuyPrice`.
+
+The bot sends sell orders at price higher than `minSellPrice`.
+
+The bot good for long buy or sell at same price.
+
+
+# [RU] SNIPERBOT
 
 ## Установка:
 
@@ -10,12 +47,20 @@ http://127.0.0.1/
 ```
 то распакуйте содержимое в корневую папку:
 ```
-sniperbot/api_wex.php
-sniperbot/wex.html
-sniperbot/aex.js
-sniperbot/cookies.html
-sniperbot/xhr.js
+products/sniperbot/binance.html
+products/sniperbot/bitfinex.html
+products/sniperbot/huobi.html
+products/sniperbot/index.html
+products/sniperbot/poloniex.html
+js/aex.js 
+js/cookies.html 
+js/xhr.js
+api/binance_api.php
+api/bitfinex_api.php
+api/huobi_api.php
+api/poloniex_api.php
 ```
+Для запуска бота набирайте в адресной строке `http://127.0.0.1/products/sniperbot`
 
 Бот предназначен для торговли по лучшим ценам в стакане.
 

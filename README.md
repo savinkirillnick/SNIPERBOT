@@ -32,7 +32,7 @@ The bot sends buy orders at price lower than `maxBuyPrice`.
 
 The bot sends sell orders at price higher than `minSellPrice`.
 
-The bot good for long buy or sell at same price.
+The bot is good for long buy or sell at same price.
 
 
 # [RU] SNIPERBOT

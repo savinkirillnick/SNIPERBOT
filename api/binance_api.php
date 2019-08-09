@@ -46,7 +46,7 @@ if ($method == 'getRules') {
 	    array_multisort($data_pair, SORT_NUMERIC, $fcontents['symbols']);
 
 	for ($i = 0; $i < $count; $i++) {
-		if ($fcontents['symbols'][$i]['baseAsset'] != 123) {
+		if ($fcontents['symbols'][$i]['baseAsset'] != 123 && $fcontents['symbols'][$i]['status'] != "BREAK") {
 			$rules .= "\"".strtolower($fcontents['symbols'][$i]['baseAsset'])."_".strtolower($fcontents['symbols'][$i]['quoteAsset'])."\":{";
 			$symbol = $fcontents['symbols'][$i]['symbol'];
 			$rules .= "\"symbol\":\"$symbol\",";
@@ -358,6 +358,35 @@ if ($method == 'sendOrder') {
 }
 
 //---------------------------- get Prices
+
+if ($method == 'getPrices') {
+
+	$link = "https://api.binance.com/api/v1/exchangeInfo";
+	$fcontents = implode ('', file ($link));
+	$rules = json_decode($fcontents, true);
+
+	$link = "https://api.binance.com/api/v3/ticker/price";
+	$fcontents = implode ('', file ($link));
+	$prices = json_decode($fcontents, true);
+
+	$count = count($prices);
+	if ($count > 0) {
+		$price = "{";
+		$price .= "\"status\":1,";
+		$price .= "\"data\":{";
+		for ($i = 0; $i < $count; $i++) {
+			$price .= "\"".strtolower($rules['symbols'][$i]['baseAsset'])."_".strtolower($rules['symbols'][$i]['quoteAsset'])."\":".$prices[$i]['price'].",";
+		}
+		$price = substr($price, 0, -1) . "}}";
+	} else {
+		$price = "{\"status\":0}";
+	}
+
+	echo $price;
+	exit;
+}
+
+//---------------------------- get Strategy Prices
 
 if ($method == 'getStrategyPrices') {
 

@@ -237,6 +237,7 @@ if ($method == 'getOrders') {
 					$orders .= "\"pair\":\"".$pair."\",";
 					$orders .= "\"type\":\"".strtolower($result[$i]['side'])."\",";
 					$orders .= "\"qty\":".$result[$i]['origQty'].",";
+					$orders .= "\"fill\":".$result[$i]['executedQty'].",";
 					$orders .= "\"price\":".$result[$i]['price'].",";
 					$orders .= "\"time\":".round($result[$i]['time']/1000,0)."},";
 				}
@@ -383,6 +384,43 @@ if ($method == 'getPrices') {
 	}
 
 	echo $price;
+	exit;
+}
+
+//---------------------------- get Kline
+
+if ($method == 'getKline') {
+
+	if(isset($_POST['pair'])) { $pair = $_POST['pair']; } elseif(isset($_GET['pair'])) { $pair = $_GET['pair']; } else { $pair = "btc_usdt"; }
+	$pair = htmlspecialchars(strip_tags(trim($pair)));
+
+	if(isset($_POST['interval'])) { $interval = $_POST['interval']; } elseif(isset($_GET['interval'])) { $interval = $_GET['interval']; } else { $interval = "1d"; }
+	$interval = htmlspecialchars(strip_tags(trim($interval)));
+
+	if(isset($_POST['start'])) { $start = $_POST['start']; } elseif(isset($_GET['start'])) { $start = $_GET['start']; } else { $start = 0; }
+	$start = htmlspecialchars(strip_tags(trim($start)));
+
+	$v = explode('_',$pair);
+	$symbol = strtoupper($v[0].$v[1]);
+
+	$link = "https://api.binance.com/api/v1/klines?symbol=$symbol&interval=$interval&startTime=$start&limit=1000";
+	$fcontents = implode ('', file ($link));
+	$klineData = json_decode($fcontents, true);
+
+	$count = count($klineData);
+	if ($count > 0) {
+		$kline = "{";
+		$kline .= "\"status\":1,";
+		$kline .= "\"data\":[";
+		for ($i = 0; $i < $count; $i++) {
+			$kline .= "[".$klineData[$i][0].",".$klineData[$i][1].",".$klineData[$i][2].",".$klineData[$i][3].",".$klineData[$i][4].",".$klineData[$i][1]."],";
+		}
+		$kline = substr($kline, 0, -1) . "]}";
+	} else {
+		$kline = "{\"status\":0}";
+	}
+
+	echo $kline;
 	exit;
 }
 

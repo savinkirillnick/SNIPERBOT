@@ -150,7 +150,7 @@ if ($method == 'getTrades'){
 
 	$symbol = strtoupper($pair);
 
-	$result = btce_query('user_trades', array("pair" => "$symbol", "lomit" => 10));
+	$result = exmo_query('user_trades', array("pair" => "$symbol", "lomit" => 10));
 	$count = count($result);
 
 		if ($count) {

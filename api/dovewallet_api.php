@@ -161,6 +161,7 @@ if ($method == 'getTrades'){
 		$trades = "{";
 		$trades .= "\"success\":1,";
 		$trades .= "\"trades\":[";
+		if ($count > 20) {$count = 20;}
 		for ($i = 0; $i < $count; $i++) {
 			if ($result['result'][$i]['PricePerUnit'] != null) {
 				$trades .= "{\"pair\":\"".$pair."\",";

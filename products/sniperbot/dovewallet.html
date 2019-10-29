@@ -503,8 +503,8 @@ function controlBuyPrice() {
 var com = parseFloat(top.document.runBot.buyQty.value*top.document.runBot.buyPrice.value);
 var pair = _g["pairs"][top.document.runBot.pair.value];
 var v = pair.split('_');
-var aroundPrice = _g["rules"]["pairs"][pair]["aroundPrice"];
-var aroundQty = _g["rules"]["pairs"][pair]["aroundQty"];
+var aroundPrice = parseInt(_g["rules"]["pairs"][pair]["aroundPrice"]);
+var aroundQty = parseInt(_g["rules"]["pairs"][pair]["aroundQty"]);
 var amount = parseFloat(_g["balances"][(v[1])]);
 var minQty = parseFloat(_g["rules"]["pairs"][pair]["minQty"]);
 var maxQty = parseFloat(_g["rules"]["pairs"][pair]["maxQty"]);
@@ -516,7 +516,7 @@ var orderQty = parseFloat(top.document.runBot.buyQty.value);
 var orderPrice = parseFloat(top.document.runBot.buyPrice.value);
 var maxBuyPrice = parseFloat(_g["set"]["maxBuyPrice"]);
 var stepDistance = parseFloat(_g["set"]["stepDistance"]);
-var buyPrice = parseFloat(top.document.runBot.buyPrice.value + stepDistance).toFixed(aroundPrice);
+var buyPrice = (parseFloat(top.document.runBot.buyPrice.value) + stepDistance).toFixed(aroundPrice);
 var counter = 0;
 
 	if (buyPrice <= maxBuyPrice) {
@@ -593,8 +593,8 @@ function controlSellPrice() {
 var com = parseFloat(top.document.runBot.sellQty.value);
 var pair = _g["pairs"][top.document.runBot.pair.value];
 var v = pair.split('_');
-var aroundPrice = _g["rules"]["pairs"][pair]["aroundPrice"];
-var aroundQty = _g["rules"]["pairs"][pair]["aroundQty"];
+var aroundPrice = parseInt(_g["rules"]["pairs"][pair]["aroundPrice"]);
+var aroundQty = parseInt(_g["rules"]["pairs"][pair]["aroundQty"]);
 var amount = parseFloat(_g["balances"][(v[0])]);
 var minQty = parseFloat(_g["rules"]["pairs"][pair]["minQty"]);
 var maxQty = parseFloat(_g["rules"]["pairs"][pair]["maxQty"]);
@@ -606,7 +606,7 @@ var orderQty = parseFloat(top.document.runBot.sellQty.value);
 var orderPrice = parseFloat(top.document.runBot.sellPrice.value);
 var minSellPrice = parseFloat(_g["set"]["minSellPrice"]);
 var stepDistance = parseFloat(_g["set"]["stepDistance"]);
-var sellPrice = parseFloat(top.document.runBot.sellPrice.value - stepDistance).toFixed(aroundPrice);
+var sellPrice = (parseFloat(top.document.runBot.sellPrice.value) - stepDistance).toFixed(aroundPrice);
 var counter = 0;
 
 	if (sellPrice >= minSellPrice) {

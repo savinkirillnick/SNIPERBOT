@@ -13,7 +13,6 @@ then extract the contents to the root folder:
 ```
 products/sniperbot/binance.html
 products/sniperbot/bitfinex.html
-products/sniperbot/dovewallet.html
 products/sniperbot/huobi.html
 products/sniperbot/index.html
 products/sniperbot/poloniex.html
@@ -22,7 +21,6 @@ js/cookies.html
 js/xhr.js
 api/binance_api.php
 api/bitfinex_api.php
-api/dovewallet_api.php
 api/huobi_api.php
 api/poloniex_api.php
 ```
@@ -51,7 +49,6 @@ http://127.0.0.1/
 ```
 products/sniperbot/binance.html
 products/sniperbot/bitfinex.html
-products/sniperbot/dovewallet.html
 products/sniperbot/huobi.html
 products/sniperbot/index.html
 products/sniperbot/poloniex.html
@@ -60,7 +57,6 @@ js/cookies.html
 js/xhr.js
 api/binance_api.php
 api/bitfinex_api.php
-api/dovewallet_api.php
 api/huobi_api.php
 api/poloniex_api.php
 ```

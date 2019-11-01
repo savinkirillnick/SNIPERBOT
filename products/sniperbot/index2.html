@@ -800,22 +800,24 @@ function refreshData () {
 </td>
 <td width=* valign='top' align='center'>
 	<table cellpadding='0' cellspacing='0' border='0' width='100%'>
-	<tr><td align='center' width='50%'><div id='v_b'>Loading...</div>
-	</td><td width='50%'><div id='v_a'>Loading...</div>
+	<tr><td align='center' width='50%'><div id='v_b'>Loading...</div><br>
+	
+	</td><td width='50%'><div id='v_a'>Loading...</div><br>
+	
 	</td></tr>
 	</table>
 	<table cellpadding='10' cellspacing='0' border='0' width='90%'>
 	<tr><td>BUY<br>
-	<input type='number' step='any' name='buyQty' placeholder='amount' style='width:80px;' onChange='controlBuyPrice()' value='1'><br>
-	<input type='number' step='any' name='buyPrice' placeholder='price' style='width:80px;' onChange='controlBuyPrice()'><br>
+	<input type='number' step='any' name='buyQty' placeholder='amount' style='width:80px;' value='1'><br>
+	<input type='number' step='any' name='buyPrice' placeholder='price' style='width:80px;'><br>
 	<select name='buyOption' style='width:80px;'>
 	  <option value='0' selected>Disallow</option>
 	  <option value='1'>Allow</option>
 	</select><br><br>
 	<input type='button' name='buyButton' value='BUY' onClick='sendBuyOrder();' style='width: 95px; height: 30px; background: #53b987; color: #f1f9f5; font-weight: bold;'>
 	</td><td>SELL<br>
-	<input type='number' step='any' name='sellQty' placeholder='amount' style='width:80px;' onChange='controlSellPrice()' value='1'><br>
-	<input type='number' step='any' name='sellPrice' placeholder='price' style='width:80px;' onChange='controlSellPrice()'><br>
+	<input type='number' step='any' name='sellQty' placeholder='amount' style='width:80px;' value='1'><br>
+	<input type='number' step='any' name='sellPrice' placeholder='price' style='width:80px;'><br>
 	<select name='sellOption' style='width:80px;'>
 	  <option value='0' selected>Disallow</option>
 	  <option value='1'>Allow</option>

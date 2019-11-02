@@ -319,7 +319,7 @@ function getOrders() {
 					timestampCreated = parserData.orders[i].time;
 					deltaTime = timestampCreated - timestampLast;
 				if (deltaTime < 0 && user.botIsRun == 1) {
-					user.queueOrders = parserData.orders[i].id;
+					user.queue = parserData.orders[i].id;
 				} else {
 					if (parserData.orders[i].type == "buy") {
 						color = "#53b987";

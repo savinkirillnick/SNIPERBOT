@@ -301,18 +301,18 @@ function getDepth() {
 
 function getOrders() {
 	if (user.userKey && user.userSecret) {
+		user.numBuyOrders = 0;
+		user.numSellOrders = 0;
 		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getOrders&key="+user.userKey+"&secret="+user.userSecret+"&pair="+user.pair;
 		var jsonString = getContent(url);
 		var parserData = JSON.parse(jsonString);
 		if (parserData.success) {
+			user.lastBuyPrice = 0;
+			user.lastSellPrice = 0;
 			var v = user.pair.split('_');
 			var timestampLast = Math.round((new Date().getTime()-user.orderLife*60000)/1000);
 			var timestampCreated;
 			var deltaTime = 0;
-			user.lastBuyPrice = 0;
-			user.lastSellPrice = 0;
-			user.numBuyOrders = 0;
-			user.numSellOrders = 0;
 			var color;
 			document.getElementById('orders').innerHTML = "";
 			for (var i = 0; i< parserData.orders.length; i++) {
@@ -411,7 +411,7 @@ function controlBuyPrice(orderPrice, orderQty) {
 	var counter = 0;
 	if (user.maxBuyPrice > 0) {
 		if (orderPrice <= user.maxBuyPrice) counter++;
-		else console.log("ERROR: maxBuyPrice "+orderQty+">"+user.maxBuyPrice);
+		else console.log("ERROR: maxBuyPrice "+orderPrice+">"+user.maxBuyPrice);
 	} else counter++;
 
 	if (rules.pairs[user.pair].minQty > 0) {
@@ -462,7 +462,7 @@ function controlSellPrice(orderPrice, orderQty) {
 	var counter = 0;
 	if (user.minSellPrice > 0) {	
 		if (orderPrice >= user.minSellPrice) counter++;
-		else console.log("ERROR: minSellPrice "+orderQty+">"+user.minSellPrice);
+		else console.log("ERROR: minSellPrice "+orderPrice+"<"+user.minSellPrice);
 	} else counter++;
 
 	if (rules.pairs[user.pair].minQty > 0) {

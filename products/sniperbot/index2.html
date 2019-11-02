@@ -517,8 +517,9 @@ function cancelOrder(orderId) {
 		if (parserData.success) {
 			log("Order "+orderId+" was cancelled.");
 			user.queue = 0;
+			progress("&#9668;");
 			if (document.getElementById('id'+orderId) !== null) document.getElementById('id'+orderId).style.display = "none";
-			progress("&#9618;");
+
 		}
 	}
 }

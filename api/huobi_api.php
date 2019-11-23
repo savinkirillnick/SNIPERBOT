@@ -329,6 +329,7 @@ if ($method == 'getOrders') {
 								$orders .= "\"type\":\"sell\",";
 							}
 						$orders .= "\"qty\":".$result['data'][$i]['amount'].",";
+						$orders .= "\"fill\":".$result['data'][$i]['field-amount'].",";
 						$orders .= "\"price\":".$result['data'][$i]['price'].",";
 						$orders .= "\"time\":".round($result['data'][$i]['created-at']/1000,0)."},";
 						$k++;

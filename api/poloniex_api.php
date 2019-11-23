@@ -179,7 +179,8 @@ if ($method == 'getOrders') {
 			$orders .= "{\"id\":".$result[$i]['orderNumber'].",";
 			$orders .= "\"pair\":\"".$pair[0]."_".$pair[1]."\",";
 			$orders .= "\"type\":\"".$result[$i]['type']."\",";
-			$orders .= "\"qty\":".$result[$i]['amount'].",";
+			$orders .= "\"qty\":".$result[$i]['startingAmount'].",";
+			$orders .= "\"fill\":".$result[$i]['amount'].",";
 			$orders .= "\"price\":".$result[$i]['rate'].",";
 			$orders .= "\"time\":".strtotime($result[$i]['date'])."},";
 		}

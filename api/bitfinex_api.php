@@ -198,7 +198,8 @@ if ($method == 'getOrders') {
 				$orders .= "{\"id\":".$result[$i]['id'].",";
 				$orders .= "\"pair\":\"".$pair."\",";
 				$orders .= "\"type\":\"".$result[$i]['side']."\",";
-				$orders .= "\"qty\":".$result[$i]['remaining_amount'].",";
+				$orders .= "\"qty\":".$result[$i]['original_amount'].",";
+				$orders .= "\"fill\":".($result[$i]['original_amount']-$result[$i]['remaining_amount']).",";
 				$orders .= "\"price\":".$result[$i]['price'].",";
 				$orders .= "\"time\":".round($result[$i]['timestamp'],0)."},";
 				$n++;

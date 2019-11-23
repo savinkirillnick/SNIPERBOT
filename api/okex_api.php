@@ -1353,6 +1353,7 @@ if ($method == 'getOrders') {
 					$orders .= "\"pair\":\"".$pair."\",";
 					$orders .= "\"type\":\"".strtolower($result['orders'][$i]['type'])."\",";
 					$orders .= "\"qty\":".$result['orders'][$i]['amount'].",";
+					$orders .= "\"fill\":0,";
 					$orders .= "\"price\":".$result['orders'][$i]['price'].",";
 					$orders .= "\"time\":".round($result['orders'][$i]['create_date']/1000,0)."},";
 				}

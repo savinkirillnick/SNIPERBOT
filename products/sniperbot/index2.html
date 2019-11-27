@@ -10,14 +10,14 @@
   gtag('config', 'UA-47078483-4');
 </script>
 <title>
-SNIPER-BOT v2.0 u.1
+SNIPER-BOT v2.1 u.1
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="description" content="Bitcoin SNIPER-BOT" />
 <meta property="keywords" content="" />
 <meta property="og:description" content="Bitcoin SNIPER-BOT" />
 <meta property="og:image" content="http://funnymay.com/images/thumb.jpg" />
-<meta property="og:title" content="SNIPER-BOT v2.0" />
+<meta property="og:title" content="SNIPER-BOT v2.1" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="http://funnymay.com/" />
   <style type="text/css">
@@ -59,18 +59,24 @@ SNIPER-BOT v2.0 u.1
 
 var user = {};
 var rules = {};
+var balances = {};
+var depth = {};
+var orders = {};
+var trades = {};
 
 function log(str) {
-	var timeData = new Date;
-	timeData = "[" + timeData.getFullYear() + "-" +
-	("00" + (timeData.getMonth() + 1)).slice(-2) + "-" +
-	("00" + timeData.getDate()).slice(-2) +
-	"] (" +
-	("00" + timeData.getHours()).slice(-2) + ":" +
-	("00" + timeData.getMinutes()).slice(-2) + ":" +
-	("00" + timeData.getSeconds()).slice(-2) +
-	")";
+	var timeStamp = new Date;
+	var timeData = formatData(timeStamp);
 	document.getElementById('logs').innerHTML += timeData + " " + str + "<br>";
+}
+
+function formatData(timeStamp) {
+	var timeData = new Date(timeStamp);
+	return timeData.getFullYear() + "-" + ("00" + (timeData.getMonth() + 1)).slice(-2) + "-" + ("00" + timeData.getDate()).slice(-2) + " " + ("00" + timeData.getHours()).slice(-2) + ":" + ("00" + timeData.getMinutes()).slice(-2) + ":" + ("00" + timeData.getSeconds()).slice(-2);
+}
+
+function clearLogs() {
+	document.getElementById('logs').innerHTML = "LOGS:<br>";
 }
 
 function getContent(url) {
@@ -93,6 +99,22 @@ function progress(sign) {
 		document.getElementById('progress_bar').innerHTML += sign;
 }
 
+function useSettings() {
+	user.userKey = top.document.runBot.userKey.value;
+	user.userSecret = top.document.runBot.userSecret.value;
+	user.botSet = top.document.runBot.botSet.value;
+	user.pair = top.document.runBot.pair.value;
+	user.fee = parseFloat(top.document.runBot.fee.value);
+	user.maxBuyPrice = parseFloat(top.document.runBot.maxBuyPrice.value);
+	user.minSellPrice = parseFloat(top.document.runBot.minSellPrice.value);
+	user.stepQty = parseFloat(top.document.runBot.stepQty.value);
+	user.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
+	user.depth = parseInt(top.document.runBot.depth.value);
+	user.orderLife = parseInt(top.document.runBot.orderLife.value);
+	user.openBaseFunds = parseFloat(top.document.runBot.openBaseFunds.value);
+	user.openQuoteFunds = parseFloat(top.document.runBot.openQuoteFunds.value);
+}
+
 function saveSettings () {
 	var userSettings = {};
 	userSettings.userKey = top.document.runBot.userKey.value;
@@ -106,25 +128,32 @@ function saveSettings () {
 	userSettings.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
 	userSettings.depth = parseInt(top.document.runBot.depth.value);
 	userSettings.orderLife = parseInt(top.document.runBot.orderLife.value);
+	userSettings.openBaseFunds = parseFloat(top.document.runBot.openBaseFunds.value);
+	userSettings.openQuoteFunds = parseFloat(top.document.runBot.openQuoteFunds.value);
 	var jsonString = JSON.stringify(userSettings).toString();
 	var encryptedString = CryptoJS.AES.encrypt(jsonString, top.document.runBot.password.value);
 	var date = new Date;
 	date.setDate( date.getDate() + 365 );
 	deleteCookie('sniperbot_set_'+userSettings.botSet);
 	setCookie('sniperbot_set'+userSettings.botSet, encryptedString, { expires: date.toUTCString() });
-	user.userKey = top.document.runBot.userKey.value;
-	user.userSecret = top.document.runBot.userSecret.value;
-	user.botSet = top.document.runBot.botSet.value;
-	user.pair = top.document.runBot.pair.value;
-	user.fee = parseFloat(top.document.runBot.fee.value);
-	user.maxBuyPrice = parseFloat(top.document.runBot.maxBuyPrice.value);
-	user.minSellPrice = parseFloat(top.document.runBot.minSellPrice.value);
-	user.stepQty = parseFloat(top.document.runBot.stepQty.value);
-	user.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
-	user.depth = parseInt(top.document.runBot.depth.value);
-	user.orderLife = parseInt(top.document.runBot.orderLife.value);
-
+	useSettings();
 	log("Settings Set_"+userSettings.botSet+" saved.");
+}
+
+function updSettings () {
+	var encryptedString = getCookie('sniperbot_set'+top.document.runBot.botSet.value);
+	var jsonString = CryptoJS.AES.decrypt(encryptedString, top.document.runBot.password.value);
+	if (jsonString != ""){
+		var userSettings = JSON.parse(jsonString.toString(CryptoJS.enc.Utf8));
+		userSettings.openBaseFunds = parseFloat(top.document.runBot.openBaseFunds.value);
+		userSettings.openQuoteFunds = parseFloat(top.document.runBot.openQuoteFunds.value);
+		var jsonString = JSON.stringify(userSettings).toString();
+		var encryptedString = CryptoJS.AES.encrypt(jsonString, top.document.runBot.password.value);
+		var date = new Date;
+		date.setDate( date.getDate() + 365 );
+		deleteCookie('sniperbot_set_'+userSettings.botSet);
+		setCookie('sniperbot_set'+userSettings.botSet, encryptedString, { expires: date.toUTCString() });
+	}
 }
 
 function loadSettings () {
@@ -147,18 +176,10 @@ function loadSettings () {
 		top.document.runBot.stepDistance.value = userSettings.stepDistance;
 		top.document.runBot.depth.value = userSettings.depth;
 		top.document.runBot.orderLife.value = userSettings.orderLife;
+		top.document.runBot.openBaseFunds.value = userSettings.openBaseFunds;
+		top.document.runBot.openQuoteFunds.value = userSettings.openQuoteFunds;
 	}
-	user.userKey = top.document.runBot.userKey.value;
-	user.userSecret = top.document.runBot.userSecret.value;
-	user.botSet = top.document.runBot.botSet.value;
-	user.pair = top.document.runBot.pair.value;
-	user.fee = parseFloat(top.document.runBot.fee.value);
-	user.maxBuyPrice = parseFloat(top.document.runBot.maxBuyPrice.value);
-	user.minSellPrice = parseFloat(top.document.runBot.minSellPrice.value);
-	user.stepQty = parseFloat(top.document.runBot.stepQty.value);
-	user.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
-	user.depth = parseInt(top.document.runBot.depth.value);
-	user.orderLife = parseInt(top.document.runBot.orderLife.value);
+	useSettings();
 	log("Settings Set_"+userSettings.botSet+" loaded.");
 }
 
@@ -174,175 +195,6 @@ function showPop() {
 	document.getElementById('hide_button').innerHTML = "<span onClick='hiddenPop()' style='cursor: pointer; cursor: hand;'>Hide Bar</span>";
 }
 
-function getRules() {
-	var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getRules";
-	var jsonString = getContent(url);
-	var parserData = JSON.parse(jsonString);
-	if (parserData.success) {
-		rules = parserData;
-		var tr=0;
-		var count = rules.coins.length;
-		var innerText = "<table cellpadding='0' cellspacing='0' border='0' width='100%'>";
-		for (var i=0;i<count;i++) {
-			if (tr == 0) {innerText += "<tr>";}
-			innerText += "<td width='70' align='right'>"+rules.coins[i].toUpperCase()+":&nbsp;</td><td width='100'><div id='inner_"+rules.coins[i]+"'>0.000000000</div></td>";
-			if (tr == 5) {innerText += "</tr>"; tr=0;} else {tr++;}
-		}
-		innerText += "</table>";
-		document.getElementById('inner_balances').innerHTML = innerText;
-		
-		innerText = "<select name='pair' style='width:80px;'>";
-		var v;
-		var j=0;
-		for (var k in rules.pairs) {
-			v = k.split('_');
-			innerText += "<option value='"+k+"'>"+v[0].toUpperCase()+"/"+v[1].toUpperCase()+"</option>";
-			j++;
-		}
-		innerText += "</select>";
-		document.getElementById('inner_pairs').innerHTML = innerText;
-	}
-	progress("&#9618;");
-}
-
-function getBalances() {
-	if (user.userKey && user.userSecret) {
-		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getBalances&key="+user.userKey+"&secret="+user.userSecret;
-		var jsonString = getContent(url);
-		var parserData = JSON.parse(jsonString);
-		if (parserData.success) {
-			var v = user.pair.split('_');
-			for (var k in parserData.funds) {
-				if (document.getElementById('inner_'+k)!== null) {
-					document.getElementById('inner_'+k).innerHTML = parserData.funds[k];
-				}
-				if (v[0] == k) {
-					user.freeBaseFunds = parserData.funds[k];
-					document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
-				}
-				if (v[1] == k) {
-					user.freeQuoteFunds = parserData.funds[k];
-					document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
-				}
-			}
-		}
-	}
-	progress("&#9618;");
-}
-
-function getTrades() {
-	var since = Math.round((new Date().getTime()-86400000)/1000);
-	if (user.userKey && user.userSecret) {
-		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getTrades&key="+user.userKey+"&secret="+user.userSecret+"&pair="+user.pair+"&since="+since;
-		var jsonString = getContent(url);
-		var parserData = JSON.parse(jsonString);
-		if (parserData.success) {
-			document.getElementById('history').innerHTML = "";
-			var orderAble = Math.round((new Date().getTime()-user.orderLife*60000)/1000);
-			var v = user.pair.split('_');
-			var count = parserData.trades.length;
-			if (count > 20) count = 20;
-			for (var i=0; i< count; i++) {
-				document.getElementById('history').innerHTML = "<div style=\"white-space: nowrap;\">"+parserData.trades[i].type.toUpperCase()+" "+parserData.trades[i].qty.toFixed(rules.pairs[user.pair].aroundQty)+" "+v[0].toUpperCase()+" @ "+parserData.trades[i].price.toFixed(rules.pairs[user.pair].aroundPrice)+" "+v[1].toUpperCase()+"</div>" + document.getElementById('history').innerHTML;
-			}
-		}
-	}
-	progress("&#9618;");
-}
-
-function getDepth() {
-	var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getDepth&depth=50&pair="+user.pair;
-	var jsonString = getContent(url);
-	var parserData = JSON.parse(jsonString);
-	if (parserData.success) {
-		user.bestBuyPrice = 0;
-		user.bestSellPrice = 0;
-		user.bestBuyQty = 0;
-		user.bestSellQty = 0;
-		var innerText = "";
-		innerText = "<table width='100%'>";
-		innerText += "<tr><th colspan='3'><b>ASKS</b></th><th colspan='3'><b>BIDS</b></th></tr>";
-		innerText += "<tr><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td></tr>";
-
-		for (var i = 0; i < user.depth; i++) {
-			if (user.bestBuyPrice == 0) {
-				if (parserData.bids[i][0] != user.lastBuyPrice && parserData.bids[i][1] != user.lastBuyQty) {
-					user.bestBuyPrice = parserData.bids[i][0];
-					user.bestBuyQty = parserData.bids[i][1];
-					top.document.runBot.buyPrice.value = (parserData.bids[i][0]+user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
-					top.document.runBot.buyQty.value = user.stepQty.toFixed(rules.pairs[user.pair].aroundQty);
-				}
-			}
-			if (user.bestSellPrice == 0) {
-				if (parserData.asks[i][0] != user.lastBuyPrice && parserData.asks[i][1] != user.lastSellQty) {
-					user.bestSellPrice = parserData.asks[i][0];
-					user.bestSellQty = parserData.asks[i][1];
-					top.document.runBot.sellPrice.value = (parserData.asks[i][0]-user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
-					top.document.runBot.sellQty.value = (((100.0-user.fee)/100.0)*user.stepQty).toFixed(rules.pairs[user.pair].aroundQty);
-				}
-			}
-			if (parserData.asks[i][0] != null) {
-				innerText += "<tr><td>"+parserData.asks[i][0]+"</td><td>"+parserData.asks[i][1]+"</td><td>"+(parserData.asks[i][0]*parserData.asks[i][1]).toFixed(rules.pairs[user.pair].aroundPrice)+"</td>";
-			} else {
-				innerText += "<tr><td></td><td></td><td></td>";
-			}
-			if (parserData.bids[i][0] != null) {
-				innerText += "<td>"+parserData.bids[i][0]+"</td><td>"+parserData.bids[i][1]+"</td><td>"+(parserData.bids[i][0]*parserData.bids[i][1]).toFixed(rules.pairs[user.pair].aroundPrice)+"</td></tr>";
-			} else {
-				innerText += "<td></td><td></td><td></td></tr>";
-			}
-		}
-		innerText += "</table>";
-		document.getElementById('depth_div').innerHTML = innerText;
-	}
-	progress("&#9618;");
-}
-
-
-function getOrders() {
-	if (user.userKey && user.userSecret) {
-		user.numBuyOrders = 0;
-		user.numSellOrders = 0;
-		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getOrders&key="+user.userKey+"&secret="+user.userSecret+"&pair="+user.pair;
-		var jsonString = getContent(url);
-		var parserData = JSON.parse(jsonString);
-		if (parserData.success) {
-			user.lastBuyPrice = 0;
-			user.lastSellPrice = 0;
-			var v = user.pair.split('_');
-			var timestampLast = Math.round((new Date().getTime()-user.orderLife*60000)/1000);
-			var timestampCreated;
-			var deltaTime = 0;
-			var color;
-			document.getElementById('orders').innerHTML = "";
-			for (var i = 0; i< parserData.orders.length; i++) {
-					timestampCreated = parserData.orders[i].time;
-					deltaTime = timestampCreated - timestampLast;
-				if (deltaTime < 0 && user.botIsRun == 1) {
-					user.queue = parserData.orders[i].id;
-				} else {
-					if (parserData.orders[i].type == "buy") {
-						color = "#53b987";
-						user.lastBuyPrice = parserData.orders[i].price;
-						user.lastBuyQty = parserData.orders[i].qty;
-						user.numBuyOrders++;
-					}
-					if (parserData.orders[i].type == "sell") {
-						color = "#eb4d5c";
-						user.lastSellPrice = parserData.orders[i].price;
-						user.lastSellQty = parserData.orders[i].qty;
-						user.numSellOrders++;
-					}
-					document.getElementById('orders').innerHTML += "<div id=\"id"+parserData.orders[i].id+"\" style=\"white-space: nowrap;\"><span style=\"color: "+color+"; font-weight: bold;\">"+parserData.orders[i].type.toUpperCase()+"</span> "+parserData.orders[i].qty.toFixed(rules.pairs[user.pair].aroundQty)+" "+v[0].toUpperCase()+" @ "+parserData.orders[i].price.toFixed(rules.pairs[user.pair].aroundPrice)+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+parserData.orders[i].id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
-				}
-			}
-		} else {
-			document.getElementById('orders').innerHTML = "";
-		}
-	}
-	progress("&#9618;");
-}
-
 function hidePage() {
 	document.getElementById('st').style.display = 'none';
 	document.getElementById('run').style.display = 'block';
@@ -350,44 +202,25 @@ function hidePage() {
 
 function initExchange() {
 	getRules();
+	viewPairs();
 	document.getElementById('st').style.display = 'block';
 }
 
 function initPage() {
-	user.userKey = top.document.runBot.userKey.value;
-	user.userSecret = top.document.runBot.userSecret.value;
-	user.botSet = top.document.runBot.botSet.value;
-	user.pair = top.document.runBot.pair.value;
-	user.fee = parseFloat(top.document.runBot.fee.value);
-	user.maxBuyPrice = parseFloat(top.document.runBot.maxBuyPrice.value);
-	user.minSellPrice = parseFloat(top.document.runBot.minSellPrice.value);
-	user.stepQty = parseFloat(top.document.runBot.stepQty.value);
-	user.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
-	user.depth = parseInt(top.document.runBot.depth.value);
-	user.orderLife = parseInt(top.document.runBot.orderLife.value);
-	user.bestBuyPrice = 0.0;
-	user.bestSellPrice = 0.0;
-	user.bestBuyQty = 0.0;
-	user.bestSellQty = 0.0;
-	user.lastBuyPrice = 0.0;
-	user.lastSellPrice = 0.0;
-	user.lastBuyQty = 0.0;
-	user.lastSellQty = 0.0;
-	user.lastOrderPrice = 0.0;
-	user.lastOrderTime = 0;
+	useSettings();
 	user.queue = 0;
-	user.numBuyOrders = 0;
-	user.numSellOrders = 0;
-	user.freeBaseFunds = 0.0;
-	user.freeQuoteFunds = 0.0;
 	user.botIsRun = false;
+	user.buyControl = false;
+	user.sellControl = false;
+	user.lastTrade = 0;
 	user.step = 0;
-	
-	showPop();
-
-	var msec = 2000;
-	setInterval(refreshData, msec);
-
+	user.side = 1;
+	if (user.init === undefined) {
+		showPop();
+		var msec = 2000;
+		setInterval(refreshData, msec);
+		user.init = 1;
+	}
 log("SNIPER-BOT is ready.");
 }
 
@@ -404,6 +237,212 @@ function initBot() {
 		user.botIsRun = true;
 		top.document.runBot.runBotButton.value = 'Stop Bot';
 		log("SNIPER-BOT started.");
+	}
+}
+
+function getRules() {
+	var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getRules";
+	var jsonString = getContent(url);
+	var parserData = JSON.parse(jsonString);
+	if (parserData.success) {
+		rules = {};
+		rules = parserData;
+	}
+	progress("&#9618;");
+}
+
+function viewPairs() {
+	var innerText = "<select name='pair' style='width:80px;'>";
+	var v;
+	var j = 0;
+	for (var k in rules.pairs) {
+		v = k.split('_');
+		innerText += "<option value='"+k+"'>"+v[0].toUpperCase()+"/"+v[1].toUpperCase()+"</option>";
+		j++;
+	}
+	innerText += "</select>";
+	document.getElementById('inner_pairs').innerHTML = innerText;
+}
+
+function getBalances() {
+	if (user.userKey && user.userSecret) {
+		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getBalances&key="+user.userKey+"&secret="+user.userSecret;
+		var jsonString = getContent(url);
+		var parserData = JSON.parse(jsonString);
+		if (parserData.success) {
+			balances = {};
+			for (var k in parserData.funds) {
+				balances[k] = parserData.funds[k];
+			}
+		}
+	}
+	progress("&#9618;");
+}
+
+function viewBalances() {
+	var v = user.pair.split('_');
+	for (var k in balances) {
+		if (v[0] == k) {
+			user.freeBaseFunds = balances[k];
+			document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
+		}
+		if (v[1] == k) {
+			user.freeQuoteFunds = balances[k];
+			document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
+		}
+	}
+}
+
+function getTrades() {
+	var since = Math.round((new Date().getTime()-86400000)/1000);
+	if (user.userKey && user.userSecret) {
+		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getTrades&key="+user.userKey+"&secret="+user.userSecret+"&pair="+user.pair+"&since="+since;
+		var jsonString = getContent(url);
+		var parserData = JSON.parse(jsonString);
+		trades = {};
+		if (parserData.success) {
+			trades = JSON.parse(JSON.stringify(parserData.trades));
+		}
+	}
+	progress("&#9618;");
+}
+
+function viewTrades() {
+	document.getElementById('history').innerHTML = "";
+	var timeData;
+	var color = '';
+	var v = user.pair.split('_');
+	var lastTrade = 0;
+	for (var i = 0; i < trades.length; i++) {
+		if (trades[i].type == 'buy') color = '53b987';
+		if (trades[i].type == 'sell') color = 'eb4d5c';
+		timeData = formatData(1000*trades[i].time);
+		document.getElementById('history').innerHTML += "<div style=\"white-space: nowrap;\">"+timeData+" <span style=\"color: "+color+"; font-weight: bold;\">"+trades[i].type.toUpperCase()+"</span> "+trades[i].qty.toFixed(rules.pairs[user.pair].aroundQty)+" "+v[0].toUpperCase()+" @ "+trades[i].price.toFixed(rules.pairs[user.pair].aroundPrice)+" "+v[1].toUpperCase()+"</div>";
+		lastTrade = trades[i].time;
+		if (user.lastTrade && lastTrade > user.lastTrade) {
+			user.lastTrade = lastTrade;
+			if (trades[i].type == 'buy') {
+				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) + trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) - trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+			}
+			if (trades[i].type == 'sell') {
+				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) - trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) + trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+			}
+			saveSettings();
+			useSettings();
+		}
+	}
+	if (!user.lastTrade) {
+		user.lastTrade = lastTrade;
+	}
+}
+
+function getDepth() {
+	var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getDepth&depth=50&pair="+user.pair;
+	var jsonString = getContent(url);
+	var parserData = JSON.parse(jsonString);
+	if (parserData.success) {
+		depth.bids = [];
+		depth.asks = [];
+		for (var i = 0; i < user.depth; i++) {
+			depth.bids[i] = {};
+			depth.asks[i] = {};
+			if (parserData.asks[i][0] != null) {
+				depth.asks[i].price = parserData.asks[i][0];
+				depth.asks[i].qty = parserData.asks[i][1];
+			}
+			if (parserData.bids[i][0] != null) {
+				depth.bids[i].price = parserData.bids[i][0];
+				depth.bids[i].qty = parserData.bids[i][1];
+			}
+		}
+	}
+	progress("&#9618;");
+}
+
+function viewDepth() {
+	var innerText = "";
+	innerText = "<table width='100%'>";
+	innerText += "<tr><th colspan='3'><b>ASKS</b></th><th colspan='3'><b>BIDS</b></th></tr>";
+	innerText += "<tr><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td></tr>";
+	for (var i = 0; i < user.depth; i++) {
+		if (depth.asks[i].price !== undefined) {
+			innerText += "<tr><td>"+depth.asks[i].price+"</td><td>"+depth.asks[i].qty+"</td><td>"+(depth.asks[i].price*depth.asks[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td>";
+		} else {
+			innerText += "<tr><td></td><td></td><td></td>";
+		}
+		if (depth.bids[i].price !== undefined) {
+			innerText += "<td>"+depth.bids[i].price+"</td><td>"+depth.bids[i].qty+"</td><td>"+(depth.bids[i].price*depth.bids[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td></tr>";
+		} else {
+			innerText += "<td></td><td></td><td></td></tr>";
+		}
+	}
+	innerText += "</table>";
+	document.getElementById('depth_div').innerHTML = innerText;	
+}
+
+function getOrders() {
+	if (user.userKey && user.userSecret) {
+		user.numBuyOrders = 0;
+		user.numSellOrders = 0;
+		var url = window.location.protocol+"//"+window.location.hostname+"/api/"+top.document.runBot.exchange.value+"_api.php?method=getOrders&key="+user.userKey+"&secret="+user.userSecret+"&pair="+user.pair;
+		var jsonString = getContent(url);
+		var parserData = JSON.parse(jsonString);
+		orders = {};
+		if (parserData.success) {
+			orders = JSON.parse(JSON.stringify(parserData.orders));
+		}
+	}
+	progress("&#9618;");
+}
+
+function viewOrders() {
+	var v = user.pair.split('_');
+	var color = '';
+	var timeData;
+	document.getElementById('orders').innerHTML = "";
+	for (var i = 0; i < orders.length; i++) {
+		if (orders[i].type == 'buy') {color = '53b987';}
+		if (orders[i].type == 'sell') {color = 'eb4d5c';}
+		timeData = formatData(orders[i].time*1000);
+		document.getElementById('orders').innerHTML += "<div id=\"id"+orders[i].id+"\" style=\"white-space: nowrap;\">"+timeData+" <span style=\"color: "+color+"; font-weight: bold;\">"+orders[i].type.toUpperCase()+"</span> "+orders[i].fill.toFixed(rules.pairs[user.pair].aroundQty)+"/"+orders[i].qty.toFixed(rules.pairs[user.pair].aroundQty)+" "+v[0].toUpperCase()+" @ "+orders[i].price.toFixed(rules.pairs[user.pair].aroundPrice)+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+orders[i].id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
+	}
+}
+
+function checkOrders() {
+	var v = user.pair.split('_');
+	var timestampLast = Math.round((new Date().getTime()-user.orderLife*60000)/1000);
+	for (var i = 0; i < orders.length; i++) {
+		if ((orders[i].time - timestampLast) < 0) {
+			user.queue = orders[i].id;
+			break;
+		}
+	}
+}
+
+function checkNumOrders() {
+	var numBuyOrders = 0;
+	var numSellOrders = 0;
+	for (var i = 0; i < orders.length; i++) {
+		if (orders[i].type == 'buy') numBuyOrders++;
+		if (orders[i].type == 'sell') numSellOrders++;
+	}
+	if (numBuyOrders > 1 && !user.queue) {
+		for (var i = 0; i < orders.length; i++) {
+			if (orders[i].type == 'buy') {
+				user.queue = orders[i].id;
+				break;
+			}
+		}
+	}
+	if (numSellOrders > 1 && !user.queue) {
+		for (var i = 0; i < orders.length; i++) {
+			if (orders[i].type == 'sell') {
+				user.queue = orders[i].id;
+				break;
+			}
+		}
 	}
 }
 
@@ -444,7 +483,11 @@ function controlBuyPrice(orderPrice, orderQty) {
 		else console.log("ERROR: maxSum "+orderPrice*orderQty+">"+rules.pairs[user.pair].maxSum);
 	} else counter++;
 	
-	if ((orderPrice*orderQty) <= user.freeQuoteFunds) counter++;
+	if (user.openQuoteFunds > 0) {
+		if ((orderPrice*orderQty) <= user.openQuoteFunds) counter++;
+	} else {
+		counter++;
+	}
 
 	if (counter == 8) {
 		top.document.runBot.buyQty.style.background = '#1c202d';
@@ -495,7 +538,11 @@ function controlSellPrice(orderPrice, orderQty) {
 		else console.log("ERROR: maxSum "+orderPrice*orderQty+">"+rules.pairs[user.pair].maxSum);
 	} else counter++;
 
-	if (orderQty <= user.freeBaseFunds) counter++;
+	if (user.openBaseFunds > 0) {
+		if (orderQty <= user.openBaseFunds) counter++;
+	} else {
+		counter++;
+	}
 
 	if (counter == 8) {
 		top.document.runBot.sellQty.style.background = '#1c202d';
@@ -519,7 +566,6 @@ function cancelOrder(orderId) {
 			user.queue = 0;
 			progress("&#9668;");
 			if (document.getElementById('id'+orderId) !== null) document.getElementById('id'+orderId).style.display = "none";
-
 		}
 	}
 }
@@ -540,26 +586,93 @@ function sendSellOrder(){
 	}
 }
 
+function prepairPrices() {
+	var color;
+	var count = 0 ;
+	if (depth.bids[0].price < user.maxBuyPrice) {
+		for (var i = 0; i < orders.length; i++) {
+			if (depth.bids[0].price == orders[i].price) {
+				count++;
+				break;
+			}
+		}
+		if (count) {
+			if ((depth.bids[0].price - depth.bids[1].price).toFixed(rules.pairs[user.pair].aroundPrice) == user.stepDistance) {
+				top.document.runBot.buyPrice.value = depth.bids[0].price;
+				color = '#eb4d5c';
+				user.buyControl = false;
+			} else {
+				top.document.runBot.buyPrice.value = (depth.bids[1].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+				color = '#1c202d';
+				user.buyControl = true;
+			}
+		} else {
+			top.document.runBot.buyPrice.value = (depth.bids[0].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+			color = '#1c202d';
+			user.buyControl = true;
+		}
+	} else {
+		top.document.runBot.buyPrice.value = user.maxBuyPrice;
+		color = '#eb4d5c';
+		user.buyControl = false;
+	}
+	top.document.runBot.buyQty.style.background = color;
+	top.document.runBot.buyPrice.style.background = color;
+	count = 0;
+	if (depth.asks[0].price > user.minSellPrice) {
+		for (var i = 0; i < orders.length; i++) {
+			if (depth.asks[0].price == orders[i].price) {
+				count++;
+				break;
+			}
+		}
+		if (count) {
+			if ((depth.asks[1].price - depth.asks[0].price).toFixed(rules.pairs[user.pair].aroundPrice) == user.stepDistance) {
+				top.document.runBot.sellPrice.value = depth.asks[0].price;
+				color = '#eb4d5c';
+				user.sellControl = false;
+			} else {
+				top.document.runBot.sellPrice.value = (depth.asks[1].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+				color = '#1c202d';
+				user.sellControl = true;
+			}
+		} else {
+			top.document.runBot.sellPrice.value = (depth.asks[0].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+			color = '#1c202d';
+			user.sellControl = true;
+		}
+	} else {
+		top.document.runBot.sellPrice.value = user.minSellPrice;
+		color = '#eb4d5c';
+		user.sellControl = false;
+	}
+	top.document.runBot.sellQty.style.background = color;
+	top.document.runBot.sellPrice.style.background = color;
+}
+
 function preSendOrder() {
 	if (user.botIsRun) {
-		var opt = 0;
 		var orderPrice;
 		var orderQty;
-		if (top.document.runBot.buyOption.value == 1 && user.numBuyOrders == 0) {
-			orderPrice = parseFloat(top.document.runBot.buyPrice.value);
-			orderQty = parseFloat(top.document.runBot.buyQty.value);
-			if (controlBuyPrice(orderPrice, orderQty)) {
-				sendOrder("BUY");
-				opt++;
+		if (top.document.runBot.buyOption.value == 1 && user.side == 1) {
+			if (user.buyControl) {
+				orderPrice = parseFloat(top.document.runBot.buyPrice.value);
+				orderQty = parseFloat(top.document.runBot.buyQty.value);
+				if (controlBuyPrice(orderPrice, orderQty)) {
+					sendOrder("BUY");
+				}
 			}
 		}
-		if (top.document.runBot.sellOption.value == 1 && user.numSellOrders == 0 && opt == 0) {
-			orderPrice = parseFloat(top.document.runBot.sellPrice.value);
-			orderQty = parseFloat(top.document.runBot.sellQty.value);
-			if (controlSellPrice(orderPrice, orderQty)) {
-				sendOrder("SELL");
+		if (top.document.runBot.sellOption.value == 1 && user.side == -1) {
+			if (user.sellControl) {
+				orderPrice = parseFloat(top.document.runBot.sellPrice.value);
+				orderQty = parseFloat(top.document.runBot.sellQty.value);
+				if (controlSellPrice(orderPrice, orderQty)) {
+					sendOrder("SELL");
+				}
 			}
 		}
+		user.side = -user.side;
 	}
 }
 
@@ -583,8 +696,6 @@ function sendOrder(type) {
 			var v = user.pair.split('_');
 			if (type == "BUY") {
 				color = "#53b987";
-				user.lastBuyPrice = orderPrice;
-				user.lastBuyQty = orderQty;
 				progress("&#9650;");
 				if (user.numBuyOrders >= 0) {
 					top.document.runBot.buyQty.style.background = '#eb4d5c';
@@ -593,8 +704,6 @@ function sendOrder(type) {
 			}
 			if (type == "SELL") {
 				color = "#eb4d5c";
-				user.lastSellPrice = orderPrice;
-				user.lastSellQty = orderQty;
 				progress("&#9660;");
 				if (user.numSellOrders >= 0) {
 					top.document.runBot.sellQty.style.background = '#eb4d5c';
@@ -602,20 +711,39 @@ function sendOrder(type) {
 				}
 			}
 			log("<span style=\"color: "+color+"; font-weight: bold;\">"+type+"</span> "+orderQty+" "+v[0].toUpperCase()+" @ "+orderPrice+" "+v[1].toUpperCase());
-			document.getElementById('orders').innerHTML += "<div id=\"id"+parserData.order.id+"\" style=\"white-space: nowrap;\"><span style=\"color: "+color+"; font-weight: bold;\">"+type+"</span> "+orderQty+" "+v[0].toUpperCase()+" @ "+orderPrice+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+parserData.order.id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
+			var timeData = formatData(new Date);
+			document.getElementById('orders').innerHTML += "<div id=\"id"+parserData.order.id+"\" style=\"white-space: nowrap;\">"+timeData+" <span style=\"color: "+color+"; font-weight: bold;\">"+type+"</span> "+orderQty+" "+v[0].toUpperCase()+" @ "+orderPrice+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+parserData.order.id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
 		}
 	}
 }
 
 function refreshData () {
 	if (user.userKey && user.userSecret) {
-		if (user.step == 0) getOrders();
-		if (user.step == 1) getDepth();
-		if (user.step == 2) getTrades();
-		if (user.step == 3) getBalances();
+		if (user.step == 0) {
+			getOrders();
+			viewOrders();
+			checkOrders();
+		}
+		if (user.step == 1) {
+			getDepth();
+			viewDepth();
+		}
+		if (user.step == 2) {
+			getTrades();
+			viewTrades();
+		}
+		if (user.step == 3) {
+			getBalances();
+			viewBalances();
+		}
 		if (user.step == 4) {
-			if (user.queue) cancelOrder(user.queue);
-			else preSendOrder();
+			checkNumOrders();
+			if (user.queue) {
+				cancelOrder(user.queue);
+			} else {
+				prepairPrices();
+				preSendOrder();
+			}
 		}
 		user.step++;
 		if (user.step > 4) user.step = 0;
@@ -632,7 +760,7 @@ function refreshData () {
 <center>
 <table cellpadding='0' cellspacing='0' border='0' width='940'>
 <tr>
-<td width='940'>
+<td width='1150'>
 
 <form name='runBot' method='get' action='/'>
 
@@ -784,8 +912,6 @@ function refreshData () {
 </tr>
 </table>
 
-<div id='inner_balances'>Loading...</div>
-
 </div>
 
 </td>
@@ -798,29 +924,32 @@ function refreshData () {
 
 <div id='depth_div' style='width: 600px;'>Loading...</div>
 <div id='progress_bar' style='margin-top: 10px;'>Progress: </div>
+<input type='button' name='clearButton' value='Clear Logs' onClick='clearLogs();'>
 <div id='logs'>LOGS:<br>Welcome to SNIPER-BOT. Loading...<br></div>
 </td>
 <td width=* valign='top' align='center'>
 	<table cellpadding='0' cellspacing='0' border='0' width='100%'>
 	<tr><td align='center' width='50%'><div id='v_b'>Loading...</div><br>
-	
+	Available Funds<br>
+	<input type='number' step='any' name='openQuoteFunds' placeholder='' value='0' style='width:120px;'>
 	</td><td width='50%'><div id='v_a'>Loading...</div><br>
-	
+	<br>
+	<input type='number' step='any' name='openBaseFunds' placeholder='' value='0' style='width:120px;'>
 	</td></tr>
 	</table>
 	<table cellpadding='10' cellspacing='0' border='0' width='90%'>
 	<tr><td>BUY<br>
-	<input type='number' step='any' name='buyQty' placeholder='amount' style='width:80px;' value='1'><br>
-	<input type='number' step='any' name='buyPrice' placeholder='price' style='width:80px;'><br>
-	<select name='buyOption' style='width:80px;'>
+	<input type='number' step='any' name='buyQty' placeholder='amount' style='width:120px;' value='1'><br>
+	<input type='number' step='any' name='buyPrice' placeholder='price' style='width:120px;'><br>
+	<select name='buyOption' style='width:120px;'>
 	  <option value='0' selected>Disallow</option>
 	  <option value='1'>Allow</option>
 	</select><br><br>
 	<input type='button' name='buyButton' value='BUY' onClick='sendBuyOrder();' style='width: 95px; height: 30px; background: #53b987; color: #f1f9f5; font-weight: bold;'>
 	</td><td>SELL<br>
-	<input type='number' step='any' name='sellQty' placeholder='amount' style='width:80px;' value='1'><br>
-	<input type='number' step='any' name='sellPrice' placeholder='price' style='width:80px;'><br>
-	<select name='sellOption' style='width:80px;'>
+	<input type='number' step='any' name='sellQty' placeholder='amount' style='width:120px;' value='1'><br>
+	<input type='number' step='any' name='sellPrice' placeholder='price' style='width:120px;'><br>
+	<select name='sellOption' style='width:120px;'>
 	  <option value='0' selected>Disallow</option>
 	  <option value='1'>Allow</option>
 	</select><br><br>

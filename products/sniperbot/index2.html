@@ -483,8 +483,8 @@ function controlBuyPrice(orderPrice, orderQty) {
 		else console.log("ERROR: maxSum "+orderPrice*orderQty+">"+rules.pairs[user.pair].maxSum);
 	} else counter++;
 	
-	if (user.openQuoteFunds > 0 || user.openQuoteFunds == 0) {
-		if ((orderPrice*orderQty) <= user.openQuoteFunds) counter++;
+	if (user.openQuoteFunds > 0 && user.openQuoteFunds >= (orderPrice*orderQty)) {
+		counter++;
 	}
 
 	if (counter == 8) {
@@ -536,8 +536,8 @@ function controlSellPrice(orderPrice, orderQty) {
 		else console.log("ERROR: maxSum "+orderPrice*orderQty+">"+rules.pairs[user.pair].maxSum);
 	} else counter++;
 
-	if (user.openBaseFunds > 0) {
-		if (orderQty <= user.openBaseFunds || user.openBaseFunds == 0) counter++;
+	if (user.openBaseFunds > 0 && user.openBaseFunds >= orderQty) {
+		counter++;
 	}
 
 	if (counter == 8) {

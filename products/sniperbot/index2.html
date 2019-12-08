@@ -10,7 +10,7 @@
   gtag('config', 'UA-47078483-4');
 </script>
 <title>
-SNIPER-BOT v2.1 u.1
+SNIPER-BOT v2.1 u.2
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="description" content="Bitcoin SNIPER-BOT" />
@@ -281,15 +281,27 @@ function getBalances() {
 
 function viewBalances() {
 	var v = user.pair.split('_');
+	var base_num = 0;
+	var quote_num = 0;
 	for (var k in balances) {
 		if (v[0] == k) {
 			user.freeBaseFunds = balances[k];
 			document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
+			base_num++;
 		}
 		if (v[1] == k) {
 			user.freeQuoteFunds = balances[k];
 			document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
+			quote_num++;
 		}
+	}
+	if (!base_num) {
+		user.freeBaseFunds = 0.0;
+		document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
+	}
+	if (!quote_num) {
+		user.freeQuoteFunds = 0.0;
+		document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
 	}
 }
 
@@ -585,6 +597,8 @@ function sendSellOrder(){
 function prepairPrices() {
 	var color;
 	var count = 0 ;
+	top.document.runBot.buyQty.value = (user.stepQty).toFixed(rules.pairs[user.pair].aroundPrice);
+	top.document.runBot.sellQty.value = (user.stepQty*(1.0-user.fee/100.0)).toFixed(rules.pairs[user.pair].aroundPrice);
 	if (depth.bids[0].price < user.maxBuyPrice) {
 		for (var i = 0; i < orders.length; i++) {
 			if (depth.bids[0].price == orders[i].price) {

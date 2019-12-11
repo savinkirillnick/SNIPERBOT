@@ -115,6 +115,7 @@ function addSettings() {
 			var userSettings = JSON.parse(jsonString.toString(CryptoJS.enc.Utf8));
 			top.document.runBot.userKey.value = userSettings.userKey;
 			top.document.runBot.userSecret.value = userSettings.userSecret;	
+			top.document.runBot.botSet.selectedIndex = userSettings.botSet;
 			for(var i = 0; i < top.document.runBot.pair.options.length; ++i) {
 				if(top.document.runBot.pair.options[i].value === userSettings.pair) {
 				   top.document.runBot.pair.selectedIndex = i;
@@ -923,7 +924,8 @@ function refreshData () {
 <td></td>
 <td align='right'>
 <select name='botSet' style='width:80px;'>
-  <option value='1'>Set: 1</option>
+  <option value='0'>Choose</option>
+  <option value='1' selected>Set: 1</option>
   <option value='2'>Set: 2</option>
   <option value='3'>Set: 3</option>
   <option value='4'>Set: 4</option>

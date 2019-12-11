@@ -10,7 +10,7 @@
   gtag('config', 'UA-47078483-4');
 </script>
 <title>
-SNIPER-BOT v2.1 u.2
+SNIPER-BOT v2.1 u.3
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="description" content="Bitcoin SNIPER-BOT" />
@@ -99,6 +99,65 @@ function progress(sign) {
 		document.getElementById('progress_bar').innerHTML += sign;
 }
 
+function adddump() {
+	if (top.document.runBot.settingsSrting.value == '') {
+		dumpSettings();
+	} else {
+		addSettings();
+	}
+}
+
+function addSettings() {
+	if (top.document.runBot.settingsSrting.value != '') {
+		var encryptedString = top.document.runBot.settingsSrting.value;
+		var jsonString = CryptoJS.AES.decrypt(encryptedString, top.document.runBot.password.value);
+		if (jsonString != ""){
+			var userSettings = JSON.parse(jsonString.toString(CryptoJS.enc.Utf8));
+			top.document.runBot.userKey.value = userSettings.userKey;
+			top.document.runBot.userSecret.value = userSettings.userSecret;	
+			for(var i = 0; i < top.document.runBot.pair.options.length; ++i) {
+				if(top.document.runBot.pair.options[i].value === userSettings.pair) {
+				   top.document.runBot.pair.selectedIndex = i;
+				   break;
+				}
+			}		
+			top.document.runBot.fee.value = userSettings.fee;
+			top.document.runBot.maxBuyPrice.value = userSettings.maxBuyPrice.toFixed(10).replace(/\.?0+$/,'');
+			top.document.runBot.minSellPrice.value = userSettings.minSellPrice.toFixed(10).replace(/\.?0+$/,'');
+			top.document.runBot.stepQty.value = userSettings.stepQty.toFixed(10).replace(/\.?0+$/,'');
+			top.document.runBot.stepDistance.value = userSettings.stepDistance.toFixed(10).replace(/\.?0+$/,'');
+			top.document.runBot.depth.value = userSettings.depth;
+			top.document.runBot.orderLife.value = userSettings.orderLife;
+			top.document.runBot.openBaseFunds.value = userSettings.openBaseFunds.toFixed(10).replace(/\.?0+$/,'');
+			top.document.runBot.openQuoteFunds.value = userSettings.openQuoteFunds.toFixed(10).replace(/\.?0+$/,'');
+		}
+		useSettings();
+	}
+	saveSettings ();
+	top.document.runBot.settingsSrting.value = '';
+}
+
+function dumpSettings() {
+	var userSettings = {};
+	userSettings.userKey = top.document.runBot.userKey.value;
+	userSettings.userSecret = top.document.runBot.userSecret.value;
+	userSettings.botSet = top.document.runBot.botSet.value;
+	userSettings.pair = top.document.runBot.pair.value;
+	userSettings.fee = parseFloat(top.document.runBot.fee.value);
+	userSettings.maxBuyPrice = parseFloat(top.document.runBot.maxBuyPrice.value);
+	userSettings.minSellPrice = parseFloat(top.document.runBot.minSellPrice.value);
+	userSettings.stepQty = parseFloat(top.document.runBot.stepQty.value);
+	userSettings.stepDistance = parseFloat(top.document.runBot.stepDistance.value);
+	userSettings.depth = parseInt(top.document.runBot.depth.value);
+	userSettings.orderLife = parseInt(top.document.runBot.orderLife.value);
+	userSettings.openBaseFunds = parseFloat(top.document.runBot.openBaseFunds.value);
+	userSettings.openQuoteFunds = parseFloat(top.document.runBot.openQuoteFunds.value);
+	var jsonString = JSON.stringify(userSettings).toString();
+	var encryptedString = CryptoJS.AES.encrypt(jsonString, top.document.runBot.password.value);
+	top.document.runBot.settingsSrting.value = encryptedString;
+	log("Settings Set_"+userSettings.botSet+" dumped.");
+}
+
 function useSettings() {
 	user.userKey = top.document.runBot.userKey.value;
 	user.userSecret = top.document.runBot.userSecret.value;
@@ -170,14 +229,14 @@ function loadSettings () {
 			}
 		}		
 		top.document.runBot.fee.value = userSettings.fee;
-		top.document.runBot.maxBuyPrice.value = userSettings.maxBuyPrice;
-		top.document.runBot.minSellPrice.value = userSettings.minSellPrice;
-		top.document.runBot.stepQty.value = userSettings.stepQty;
-		top.document.runBot.stepDistance.value = userSettings.stepDistance;
+		top.document.runBot.maxBuyPrice.value = userSettings.maxBuyPrice.toFixed(10).replace(/\.?0+$/,'');
+		top.document.runBot.minSellPrice.value = userSettings.minSellPrice.toFixed(10).replace(/\.?0+$/,'');
+		top.document.runBot.stepQty.value = userSettings.stepQty.toFixed(10).replace(/\.?0+$/,'');
+		top.document.runBot.stepDistance.value = userSettings.stepDistance.toFixed(10).replace(/\.?0+$/,'');
 		top.document.runBot.depth.value = userSettings.depth;
 		top.document.runBot.orderLife.value = userSettings.orderLife;
-		top.document.runBot.openBaseFunds.value = userSettings.openBaseFunds;
-		top.document.runBot.openQuoteFunds.value = userSettings.openQuoteFunds;
+		top.document.runBot.openBaseFunds.value = userSettings.openBaseFunds.toFixed(10).replace(/\.?0+$/,'');
+		top.document.runBot.openQuoteFunds.value = userSettings.openQuoteFunds.toFixed(10).replace(/\.?0+$/,'');
 	}
 	useSettings();
 	log("Settings Set_"+userSettings.botSet+" loaded.");
@@ -286,22 +345,22 @@ function viewBalances() {
 	for (var k in balances) {
 		if (v[0] == k) {
 			user.freeBaseFunds = balances[k];
-			document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
+			document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 			base_num++;
 		}
 		if (v[1] == k) {
 			user.freeQuoteFunds = balances[k];
-			document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
+			document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 			quote_num++;
 		}
 	}
 	if (!base_num) {
 		user.freeBaseFunds = 0.0;
-		document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty);
+		document.getElementById('v_a').innerHTML = v[0].toUpperCase() + ": " + (user.freeBaseFunds).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 	}
 	if (!quote_num) {
 		user.freeQuoteFunds = 0.0;
-		document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty);
+		document.getElementById('v_b').innerHTML = v[1].toUpperCase() + ": " + (user.freeQuoteFunds).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 	}
 }
 
@@ -334,12 +393,12 @@ function viewTrades() {
 		if (user.lastTrade && lastTrade > user.lastTrade) {
 			user.lastTrade = lastTrade;
 			if (trades[i].type == 'buy') {
-				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) + trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
-				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) - trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) + trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
+				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) - trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 			}
 			if (trades[i].type == 'sell') {
-				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) - trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
-				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) + trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty);
+				top.document.runBot.openBaseFunds.value = (parseFloat(top.document.runBot.openBaseFunds.value) - trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
+				top.document.runBot.openQuoteFunds.value = (parseFloat(top.document.runBot.openQuoteFunds.value) + trades[i].price*trades[i].qty).toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'');
 			}
 			saveSettings();
 			useSettings();
@@ -380,12 +439,12 @@ function viewDepth() {
 	innerText += "<tr><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td><td width='16.666%'>Price</td><td width='16.667%'>Amount</td><td width='16.667%'>Summ</td></tr>";
 	for (var i = 0; i < user.depth; i++) {
 		if (depth.asks[i].price !== undefined) {
-			innerText += "<tr><td>"+depth.asks[i].price+"</td><td>"+depth.asks[i].qty+"</td><td>"+(depth.asks[i].price*depth.asks[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td>";
+			innerText += "<tr><td>"+depth.asks[i].price.toFixed(10).replace(/\.?0+$/,'')+"</td><td>"+depth.asks[i].qty.toFixed(10).replace(/\.?0+$/,'')+"</td><td>"+(depth.asks[i].price*depth.asks[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td>";
 		} else {
 			innerText += "<tr><td></td><td></td><td></td>";
 		}
 		if (depth.bids[i].price !== undefined) {
-			innerText += "<td>"+depth.bids[i].price+"</td><td>"+depth.bids[i].qty+"</td><td>"+(depth.bids[i].price*depth.bids[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td></tr>";
+			innerText += "<td>"+depth.bids[i].price.toFixed(10).replace(/\.?0+$/,'')+"</td><td>"+depth.bids[i].qty.toFixed(10).replace(/\.?0+$/,'')+"</td><td>"+(depth.bids[i].price*depth.bids[i].qty).toFixed(rules.pairs[user.pair].aroundPrice)+"</td></tr>";
 		} else {
 			innerText += "<td></td><td></td><td></td></tr>";
 		}
@@ -418,7 +477,7 @@ function viewOrders() {
 		if (orders[i].type == 'buy') {color = '53b987';}
 		if (orders[i].type == 'sell') {color = 'eb4d5c';}
 		timeData = formatData(orders[i].time*1000);
-		document.getElementById('orders').innerHTML += "<div id=\"id"+orders[i].id+"\" style=\"white-space: nowrap;\">"+timeData+" <span style=\"color: "+color+"; font-weight: bold;\">"+orders[i].type.toUpperCase()+"</span> "+orders[i].fill.toFixed(rules.pairs[user.pair].aroundQty)+"/"+orders[i].qty.toFixed(rules.pairs[user.pair].aroundQty)+" "+v[0].toUpperCase()+" @ "+orders[i].price.toFixed(rules.pairs[user.pair].aroundPrice)+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+orders[i].id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
+		document.getElementById('orders').innerHTML += "<div id=\"id"+orders[i].id+"\" style=\"white-space: nowrap;\">"+timeData+" <span style=\"color: "+color+"; font-weight: bold;\">"+orders[i].type.toUpperCase()+"</span> "+orders[i].fill.toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'')+"/"+orders[i].qty.toFixed(rules.pairs[user.pair].aroundQty).replace(/\.?0+$/,'')+" "+v[0].toUpperCase()+" @ "+orders[i].price.toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'')+" "+v[1].toUpperCase()+" <b><span onClick=\"cancelOrder("+orders[i].id+")\" style=\"cursor: pointer; cursor: hand;\">×</span></b></div>";
 	}
 }
 
@@ -597,8 +656,8 @@ function sendSellOrder(){
 function prepairPrices() {
 	var color;
 	var count = 0 ;
-	top.document.runBot.buyQty.value = (user.stepQty).toFixed(rules.pairs[user.pair].aroundPrice);
-	top.document.runBot.sellQty.value = (user.stepQty*(1.0-user.fee/100.0)).toFixed(rules.pairs[user.pair].aroundPrice);
+	top.document.runBot.buyQty.value = (user.stepQty).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
+	top.document.runBot.sellQty.value = (user.stepQty*(1.0-user.fee/100.0)).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 	if (depth.bids[0].price < user.maxBuyPrice) {
 		for (var i = 0; i < orders.length; i++) {
 			if (depth.bids[0].price == orders[i].price) {
@@ -608,21 +667,21 @@ function prepairPrices() {
 		}
 		if (count) {
 			if ((depth.bids[0].price - depth.bids[1].price).toFixed(rules.pairs[user.pair].aroundPrice) == user.stepDistance) {
-				top.document.runBot.buyPrice.value = depth.bids[0].price;
+				top.document.runBot.buyPrice.value = depth.bids[0].price.toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 				color = '#eb4d5c';
 				user.buyControl = false;
 			} else {
-				top.document.runBot.buyPrice.value = (depth.bids[1].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+				top.document.runBot.buyPrice.value = (depth.bids[1].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 				color = '#1c202d';
 				user.buyControl = true;
 			}
 		} else {
-			top.document.runBot.buyPrice.value = (depth.bids[0].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+			top.document.runBot.buyPrice.value = (depth.bids[0].price + user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 			color = '#1c202d';
 			user.buyControl = true;
 		}
 	} else {
-		top.document.runBot.buyPrice.value = user.maxBuyPrice;
+		top.document.runBot.buyPrice.value = user.maxBuyPrice.toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 		color = '#eb4d5c';
 		user.buyControl = false;
 	}
@@ -638,21 +697,21 @@ function prepairPrices() {
 		}
 		if (count) {
 			if ((depth.asks[1].price - depth.asks[0].price).toFixed(rules.pairs[user.pair].aroundPrice) == user.stepDistance) {
-				top.document.runBot.sellPrice.value = depth.asks[0].price;
+				top.document.runBot.sellPrice.value = depth.asks[0].price.toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 				color = '#eb4d5c';
 				user.sellControl = false;
 			} else {
-				top.document.runBot.sellPrice.value = (depth.asks[1].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+				top.document.runBot.sellPrice.value = (depth.asks[1].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 				color = '#1c202d';
 				user.sellControl = true;
 			}
 		} else {
-			top.document.runBot.sellPrice.value = (depth.asks[0].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice);
+			top.document.runBot.sellPrice.value = (depth.asks[0].price - user.stepDistance).toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 			color = '#1c202d';
 			user.sellControl = true;
 		}
 	} else {
-		top.document.runBot.sellPrice.value = user.minSellPrice;
+		top.document.runBot.sellPrice.value = user.minSellPrice.toFixed(rules.pairs[user.pair].aroundPrice).replace(/\.?0+$/,'');
 		color = '#eb4d5c';
 		user.sellControl = false;
 	}
@@ -845,9 +904,9 @@ function refreshData () {
 <td><input type='number' step='any' name='fee' placeholder='4' value='0.2' style='width:80px;'>
 </td>
 </tr><tr>
-<td height='30'></td>
-<td></td>
-<td></td>
+<td height='30'>Add/Dump Settings %&nbsp;</td>
+<td><input type='text' name='settingsSrting' placeholder=''></td>
+<td><input type='button' name='adddumpButton' value='ADD/DUMP' onClick='adddump();'></td>
 <td></td>
 <td></td>
 <td></td>

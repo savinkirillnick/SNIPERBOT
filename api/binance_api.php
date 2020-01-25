@@ -10,7 +10,7 @@ $method = htmlspecialchars(strip_tags(trim($method)));
 
 if ($method == 'getRules') {
 
-	$link = "https://api.binance.com/api/v1/exchangeInfo";
+	$link = "https://api.binance.com/api/v3/exchangeInfo";
 	$fcontents = implode ('', file ($link));
 	$fcontents = json_decode($fcontents, true);
 
@@ -72,6 +72,9 @@ if ($method == 'getRules') {
 
 function binance_query($path, $method, array $req = array()) {
 
+	if(isset($_POST['debug'])) { $debug = $_POST['debug']; } elseif(isset($_GET['debug'])) { $debug = $_GET['debug']; } else { $debug = 0; }
+
+
 	if(isset($_POST['key'])) { $key = $_POST['key']; } elseif(isset($_GET['key'])) { $key = $_GET['key']; } else { $key = 0; }
 	if(isset($_POST['secret'])) { $secret = $_POST['secret']; } elseif(isset($_GET['secret'])) { $secret = $_GET['secret']; } else { $secret = 0; }
 
@@ -84,7 +87,7 @@ function binance_query($path, $method, array $req = array()) {
 		$deltaTime = $_COOKIE["binanceDeltaTime"];
 		$correctTime = time()*1000 - $deltaTime;
 	} else {
-		$link = "https://api.binance.com/api/v1/time";
+		$link = "https://api.binance.com/api/v3/time";
 		$fcontents = implode ('', file ($link));
 		$fcontents = json_decode($fcontents, true);
 		$serverTime = $fcontents["serverTime"];
@@ -140,11 +143,13 @@ function binance_query($path, $method, array $req = array()) {
 
 	$res = curl_exec($ch);
 
+	if ($debug) { print $res; }
+
 	if ($res === false) {
 		print "{\"success\":0}";
 		exit;
 	}
-
+	
 	$dec = json_decode($res, true);
 	if (!$dec) {
 		print "{\"success\":0}";
@@ -159,20 +164,23 @@ if ($method == 'getBalances'){
 
 	$result = binance_query("/api/v3/account","GET");
 
-	if ($result['updateTime'] != null) {
-		$balances = "{";
-		$balances .= "\"success\":1,";
-		$balances .= "\"funds\":{";
-		$count = count($result['balances']);
-
-		for ($i = 0; $i < $count; $i++) {
-			$balances .= "\"".strtolower($result['balances'][$i]['asset'])."\":".$result['balances'][$i]['free'].",";
-		}
-		$balances = substr($balances, 0, -1) . "}}";
-	} else {
+	if (!empty($result['code'])) {
 		$balances = "{\"success\":0}";
-	}
+	} else {
+		if ($result['updateTime'] != null) {
+			$balances = "{";
+			$balances .= "\"success\":1,";
+			$balances .= "\"funds\":{";
+			$count = count($result['balances']);
 
+			for ($i = 0; $i < $count; $i++) {
+				$balances .= "\"".strtolower($result['balances'][$i]['asset'])."\":".$result['balances'][$i]['free'].",";
+			}
+			$balances = substr($balances, 0, -1) . "}}";
+		} else {
+			$balances = "{\"success\":0}";
+		}
+	}
 	echo $balances;
 	exit;
 
@@ -191,7 +199,10 @@ if ($method == 'getTrades'){
 
 	$result = binance_query("/api/v3/myTrades","GET", array("symbol" => "$symbol","limit" => "10",));
 	$count = count($result);
-
+	
+	if (!empty($result['code'])) {
+		$trades = "{\"success\":0}";
+	} else {
 		if ($count) {
 			$trades = "{";
 			$trades .= "\"success\":1,";
@@ -211,6 +222,8 @@ if ($method == 'getTrades'){
 		} else {
 			$trades = "{\"success\":0}";
 		}
+	}
+
 
 	echo $trades;
 	exit;
@@ -228,6 +241,9 @@ if ($method == 'getOrders') {
 	$result = binance_query("/api/v3/openOrders","GET", array("symbol" => "$symbol",));
 	$count = count($result);
 
+	if (!empty($result['code'])) {
+		$orders = "{\"success\":0}";
+	} else {
 		if ($count) {
 			$orders = "{";
 			$orders .= "\"success\":1,";
@@ -245,6 +261,7 @@ if ($method == 'getOrders') {
 		} else {
 			$orders = "{\"success\":0}";
 		}
+	}
 	echo $orders;
 	exit;
 
@@ -263,7 +280,7 @@ if ($method == 'getDepth') {
 	$v = explode('_',$pair);
 	$symbol = strtoupper($v[0].$v[1]);
 
-	$link = "https://api.binance.com/api/v1/depth?symbol=$symbol&limit=$depth";
+	$link = "https://api.binance.com/api/v3/depth?symbol=$symbol&limit=$depth";
 	$fcontents = implode ('', file ($link));
 	$fcontents = json_decode($fcontents, true);
 
@@ -362,7 +379,7 @@ if ($method == 'sendOrder') {
 
 if ($method == 'getPrices') {
 
-	$link = "https://api.binance.com/api/v1/exchangeInfo";
+	$link = "https://api.binance.com/api/v3/exchangeInfo";
 	$fcontents = implode ('', file ($link));
 	$rules = json_decode($fcontents, true);
 
@@ -403,7 +420,7 @@ if ($method == 'getKline') {
 	$v = explode('_',$pair);
 	$symbol = strtoupper($v[0].$v[1]);
 
-	$link = "https://api.binance.com/api/v1/klines?symbol=$symbol&interval=$interval&startTime=$start&limit=1000";
+	$link = "https://api.binance.com/api/v3/klines?symbol=$symbol&interval=$interval&startTime=$start&limit=1000";
 	$fcontents = implode ('', file ($link));
 	$klineData = json_decode($fcontents, true);
 
